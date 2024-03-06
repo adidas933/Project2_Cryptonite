@@ -1,0 +1,46 @@
+body {
+  background-color: rgb(48, 48, 48);
+  color: aliceblue;
+}
+
+.headingContainer {
+  display: flex;
+}
+
+.headingContainer img {
+  width: 100px;
+  margin-left: auto;
+}
+
+.navbarAndSearchContainer {
+  display: flex;
+}
+
+.search {
+  margin-left: auto;
+  top: 13px;
+  position: relative;
+} 
+
+.navbarSeachCardsContainer {
+  width: 800px;
+  margin: auto;
+}
+
+.cardHeadingAndCheckBox {
+  display: flex;
+}
+
+.checkCrypto {
+  margin-left: auto;
+}
+
+.testtt {
+  width: 500px;
+  height: 500px;
+  border: white 2px solid;
+}
+
+.currencies {
+  /* opacity: 0; */
+}
