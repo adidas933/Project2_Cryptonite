@@ -37,8 +37,8 @@ class CurrentPrice {
     }
 }
 class CoinImage {
-    constructor(large) {
-        this.large = large;
+    constructor(thumb) {
+        this.thumb = thumb;
     }
 }
 // Variables:
@@ -68,19 +68,19 @@ function fetchCoins() {
         return yield responseCoins.json();
     });
 }
-function moreInfoContent(coin, currenciesContainer) {
-    return __awaiter(this, void 0, void 0, function* () {
-        currenciesContainer.html(`  <img src="${coin.image.large}" class="card-img-top">
-    <p class="card-text">${coin.market_data.current_price.usd} $</p>
-    <p class="card-text">${coin.market_data.current_price.eur} €</p>
-    <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`);
-    });
+function moreInfoContent(coin) {
+    const moreInfo = `<img src="${coin.image.thumb}">
+  <p class="card-text">${coin.market_data.current_price.usd} $</p>
+  <p class="card-text">${coin.market_data.current_price.eur} €</p>
+  <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`;
+    return moreInfo;
 }
 function fetchCoin(coinId) {
     return __awaiter(this, void 0, void 0, function* () {
         const responseCoin = yield fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
         const coinData = yield responseCoin.json();
-        const coin = new Coin(coinData.name, coinData.id, new CoinImage(coinData.image.large), new MarketData(new CurrentPrice(coinData.market_data.current_price.usd, coinData.market_data.current_price.eur, coinData.market_data.current_price.ils)));
+        // fix this to simple way without new...
+        const coin = new Coin(coinData.name, coinData.id, new CoinImage(coinData.image.thumb), new MarketData(new CurrentPrice(coinData.market_data.current_price.usd, coinData.market_data.current_price.eur, coinData.market_data.current_price.ils)));
         return coin;
     });
 }
@@ -88,7 +88,7 @@ function getCrypto() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!localStorage['coins']) {
             const coins = yield fetchCoins();
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 100; i++) {
                 const coin = coins[i];
                 createCard(coin);
             }
@@ -96,7 +96,7 @@ function getCrypto() {
         }
         else {
             const coinFromStorage = JSON.parse(localStorage['coins']) || undefined;
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 100; i++) {
                 const coin = coinFromStorage[i];
                 createCard(coin);
             }
@@ -104,41 +104,64 @@ function getCrypto() {
     });
 }
 function createCard(coin) {
-    const card = $(`
-  <div class="card" style="width: 18rem;">
-  <div class="card-body">
-  <div class="cardHeadingAndCheckBox">
-  <h5 class="card-title">${coin.name}</h5>
-  <div class="checkCrypto form-check form-switch">
-  <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
-  <label class="form-check-label" for="flexSwitchCheckChecked">check</label>
-  </div>
-  </div>
-  <a href="#" class="moreInfoBtn btn btn-primary" id="moreInfo_btn${coin.id}">More Info</a>
-  <div class="currencies" id="currencies_${coin.id}"></div>
-  </div>
-  </div>
-  `);
-    cardsContainer.append(card);
+    const cardContainer = $('<div>');
+    cardContainer.addClass('card col-md-4 text-center');
+    cardContainer.css('width', '18rem');
+    const cardBody = $('<div>');
+    cardBody.addClass('card-body');
+    cardContainer.append(cardBody);
+    const cardHeadingAndCheckBox = $('<div>');
+    cardHeadingAndCheckBox.addClass('cardHeadingAndCheckBox d-flex p-2');
+    cardBody.append(cardHeadingAndCheckBox);
+    const cardTitle = $('<h5>');
+    cardTitle.addClass('card-title col-6');
+    cardTitle.html(coin.name);
+    cardHeadingAndCheckBox.append(cardTitle);
+    const toggleButtonContainer = $('<div>');
+    toggleButtonContainer.addClass('toggleButtonContainer form-check form-switch col-6 ms-5');
+    cardHeadingAndCheckBox.append(toggleButtonContainer);
+    const toggleButtonInput = $('<input>');
+    toggleButtonInput.addClass('form-check-input');
+    toggleButtonInput.attr('id', 'flexSwitchCheckDefault');
+    toggleButtonInput.attr('type', 'checkbox');
+    toggleButtonInput.attr('role', 'switch');
+    toggleButtonContainer.append(toggleButtonInput);
+    const moreInfoBtn = $('<a>');
+    moreInfoBtn.addClass('moreInfoBtn btn btn-primary');
+    moreInfoBtn.attr('href', '#');
+    moreInfoBtn.attr('id', `moreInfo_btn${coin.id}`);
+    moreInfoBtn.html('More Info');
+    cardBody.append(moreInfoBtn);
+    const moreInfoContainer = $('<div>');
+    moreInfoContainer.addClass('currencies text-center');
+    moreInfoContainer.attr('id', `currencies_${coin.id}`);
+    cardBody.append(moreInfoContainer);
+    cardsContainer.append(cardContainer);
     moreInfo2(coin.id);
 }
 function moreInfo2(coinId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const moreInfoBtn = $(`#moreInfo_btn${coinId}`);
-        const currenciesContainer = $(`#currencies_${coinId}`);
-        moreInfoBtn.on('click', function () {
+        const toggleButtonInput = $(`#moreInfo_btn${coinId}`);
+        const moreInfoContainer = $(`#currencies_${coinId}`);
+        toggleButtonInput.on('click', function () {
             return __awaiter(this, void 0, void 0, function* () {
-                toggleMoreInfo(currenciesContainer, coinId);
+                toggleMoreInfo(moreInfoContainer, coinId);
             });
         });
     });
 }
-function toggleMoreInfo(currenciesContainer, coinId) {
+function toggleMoreInfo(moreInfoContainer, coinId) {
     return __awaiter(this, void 0, void 0, function* () {
         const coinFetched = yield fetchCoin(coinId);
-        yield moreInfoContent(coinFetched, currenciesContainer);
-        opacity ? (opacity = 0) : (opacity = 1);
-        currenciesContainer.css('opacity', opacity);
+        const getMoreInfoContent = moreInfoContent(coinFetched);
+        // opacity ? (opacity = 0) : (opacity = 1);
+        // moreInfoContainer.css('opacity', opacity);
+        if (moreInfoContainer.html()) {
+            moreInfoContainer.html('');
+        }
+        else {
+            moreInfoContainer.html(getMoreInfoContent);
+        }
     });
 }
 // Event listeners:

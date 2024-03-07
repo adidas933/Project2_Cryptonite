@@ -3,9 +3,9 @@ body {
   color: aliceblue;
 }
 
-.headingContainer {
+/* .headingContainer {
   display: flex;
-}
+} */
 
 .headingContainer img {
   width: 100px;
@@ -22,24 +22,10 @@ body {
   position: relative;
 } 
 
-.navbarSeachCardsContainer {
-  width: 800px;
-  margin: auto;
-}
-
-.cardHeadingAndCheckBox {
-  display: flex;
-}
-
-.checkCrypto {
+/* .checkCrypto {
   margin-left: auto;
-}
+} */
 
-.testtt {
-  width: 500px;
-  height: 500px;
-  border: white 2px solid;
-}
 
 .currencies {
   /* opacity: 0; */
