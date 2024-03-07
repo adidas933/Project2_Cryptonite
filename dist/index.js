@@ -45,25 +45,35 @@ class CoinImage {
 let opacity;
 const cardsContainer = $('.cardsContainer');
 const moreInfoBtn = $('.moreInfoBtn');
+const searchBtn = $('.searchBtn');
+const searchInput = $('.searchInput');
 const arrayOfCoins = [];
 // Functions:
+function sortCoins() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // maybe i should get from storage... instead of fetching each time
+        const coins = yield fetchCoins();
+        coins.forEach((coin) => {
+            if (coin.symbol.toLowerCase() === searchInput.val().toLowerCase()) {
+                cardsContainer.empty();
+                createCard(coin);
+            }
+        });
+        // get symbol of coins that is equal to search input.
+    });
+}
 function fetchCoins() {
     return __awaiter(this, void 0, void 0, function* () {
         const responseCoins = yield fetch('https://api.coingecko.com/api/v3/coins/list');
         return yield responseCoins.json();
     });
 }
-// const arrayOfIds = [];
-// for (let i = 0; i < 10; i++) {
-// arrayOfIds.push(allCoins[i].id);
-// fetch coin by id:
-// const allCoins = coins;
-function moreInfo(coin, currenciesContainer) {
+function moreInfoContent(coin, currenciesContainer) {
     return __awaiter(this, void 0, void 0, function* () {
         currenciesContainer.html(`  <img src="${coin.image.large}" class="card-img-top">
-  <p class="card-text">${coin.market_data.current_price.usd} $</p>
-  <p class="card-text">${coin.market_data.current_price.eur} €</p>
-  <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`);
+    <p class="card-text">${coin.market_data.current_price.usd} $</p>
+    <p class="card-text">${coin.market_data.current_price.eur} €</p>
+    <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`);
     });
 }
 function fetchCoin(coinId) {
@@ -74,10 +84,6 @@ function fetchCoin(coinId) {
         return coin;
     });
 }
-// arrayOfCoins.push(coin);
-// localStorage['coins'] = JSON.stringify(arrayOfCoins);
-// }
-// return arrayOfCoins;
 function getCrypto() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!localStorage['coins']) {
@@ -97,12 +103,8 @@ function getCrypto() {
         }
     });
 }
-// I need the following:
-// 1. split the card on createCard function to what is in the heading and what is in the more info part that is not visible.
-// 2. when clicking the button on a specific coin - fetch the the image and currencies.
 function createCard(coin) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const card = $(`
+    const card = $(`
   <div class="card" style="width: 18rem;">
   <div class="card-body">
   <div class="cardHeadingAndCheckBox">
@@ -117,19 +119,28 @@ function createCard(coin) {
   </div>
   </div>
   `);
-        cardsContainer.append(card);
-        const moreInfoBtn = $(`#moreInfo_btn${coin.id}`);
-        const currenciesContainer = $(`#currencies_${coin.id}`);
-        const coinId = coin.id;
+    cardsContainer.append(card);
+    moreInfo2(coin.id);
+}
+function moreInfo2(coinId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const moreInfoBtn = $(`#moreInfo_btn${coinId}`);
+        const currenciesContainer = $(`#currencies_${coinId}`);
         moreInfoBtn.on('click', function () {
             return __awaiter(this, void 0, void 0, function* () {
-                const coinFetched = yield fetchCoin(coinId);
-                moreInfo(coinFetched, currenciesContainer);
-                opacity ? (opacity = 0) : (opacity = 1);
-                currenciesContainer.css('opacity', opacity);
+                toggleMoreInfo(currenciesContainer, coinId);
             });
         });
     });
 }
+function toggleMoreInfo(currenciesContainer, coinId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const coinFetched = yield fetchCoin(coinId);
+        yield moreInfoContent(coinFetched, currenciesContainer);
+        opacity ? (opacity = 0) : (opacity = 1);
+        currenciesContainer.css('opacity', opacity);
+    });
+}
 // Event listeners:
 document.addEventListener('DOMContentLoaded', getCrypto);
+searchBtn.on('click', sortCoins);

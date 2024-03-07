@@ -57,9 +57,25 @@ class CoinImage {
 let opacity: number;
 const cardsContainer = $('.cardsContainer');
 const moreInfoBtn = $('.moreInfoBtn');
+const searchBtn = $('.searchBtn');
+const searchInput: any = $('.searchInput');
 const arrayOfCoins: Coin[] = [];
 
 // Functions:
+
+async function sortCoins() {
+  // maybe i should get from storage... instead of fetching each time
+  const coins = await fetchCoins();
+  coins.forEach((coin) => {
+    if (coin.symbol.toLowerCase() === searchInput.val().toLowerCase()) {
+      cardsContainer.empty();
+      createCard(coin);
+    }
+  });
+
+  // get symbol of coins that is equal to search input.
+}
+
 async function fetchCoins(): Promise<Coins[]> {
   const responseCoins = await fetch(
     'https://api.coingecko.com/api/v3/coins/list'
@@ -67,17 +83,11 @@ async function fetchCoins(): Promise<Coins[]> {
   return await responseCoins.json();
 }
 
-// const arrayOfIds = [];
-// for (let i = 0; i < 10; i++) {
-// arrayOfIds.push(allCoins[i].id);
-// fetch coin by id:
-// const allCoins = coins;
-
-async function moreInfo(coin: Coin, currenciesContainer: any) {
+async function moreInfoContent(coin: Coin, currenciesContainer: any) {
   currenciesContainer.html(`  <img src="${coin.image.large}" class="card-img-top">
-  <p class="card-text">${coin.market_data.current_price.usd} $</p>
-  <p class="card-text">${coin.market_data.current_price.eur} €</p>
-  <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`);
+    <p class="card-text">${coin.market_data.current_price.usd} $</p>
+    <p class="card-text">${coin.market_data.current_price.eur} €</p>
+    <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`);
 }
 
 async function fetchCoin(coinId: string): Promise<Coin> {
@@ -99,10 +109,6 @@ async function fetchCoin(coinId: string): Promise<Coin> {
   );
   return coin;
 }
-// arrayOfCoins.push(coin);
-// localStorage['coins'] = JSON.stringify(arrayOfCoins);
-// }
-// return arrayOfCoins;
 
 async function getCrypto(): Promise<void> {
   if (!localStorage['coins']) {
@@ -121,10 +127,8 @@ async function getCrypto(): Promise<void> {
     }
   }
 }
-// I need the following:
-// 1. split the card on createCard function to what is in the heading and what is in the more info part that is not visible.
-// 2. when clicking the button on a specific coin - fetch the the image and currencies.
-async function createCard(coin: Coins): Promise<void> {
+
+function createCard(coin: Coins) {
   const card = $(`
   <div class="card" style="width: 18rem;">
   <div class="card-body">
@@ -141,19 +145,27 @@ async function createCard(coin: Coins): Promise<void> {
   </div>
   `);
   cardsContainer.append(card);
+  moreInfo2(coin.id);
+}
 
-  const moreInfoBtn = $(`#moreInfo_btn${coin.id}`);
-  const currenciesContainer = $(`#currencies_${coin.id}`);
-  const coinId = coin.id;
-
+async function moreInfo2(coinId: string): Promise<void> {
+  const moreInfoBtn = $(`#moreInfo_btn${coinId}`);
+  const currenciesContainer = $(`#currencies_${coinId}`);
   moreInfoBtn.on('click', async function () {
-    const coinFetched: Coin = await fetchCoin(coinId);
-    moreInfo(coinFetched, currenciesContainer);
-
-    opacity ? (opacity = 0) : (opacity = 1);
-    currenciesContainer.css('opacity', opacity);
+    toggleMoreInfo(currenciesContainer, coinId);
   });
+}
+
+async function toggleMoreInfo(
+  currenciesContainer: JQuery<HTMLElement>,
+  coinId: string
+) {
+  const coinFetched: Coin = await fetchCoin(coinId);
+  await moreInfoContent(coinFetched, currenciesContainer);
+  opacity ? (opacity = 0) : (opacity = 1);
+  currenciesContainer.css('opacity', opacity);
 }
 
 // Event listeners:
 document.addEventListener('DOMContentLoaded', getCrypto);
+searchBtn.on('click', sortCoins);
