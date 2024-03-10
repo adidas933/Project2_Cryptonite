@@ -1,8 +1,4 @@
 "use strict";
-// PROBLEMS:
-// when i click the more info button it wont work the first time
-// when I click the more info button the first time - I get the right info on the coin card button I clicked. after that when I click another coind more info button I get the first coin info. maybe something with the local storage that needs an if statement...
-// when page is loaded it brings me to the top of page.
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12,6 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// PROBLEMS:
+// when clicking the more info button the data comes before the button and the button is in the bottom how to change this?
 // Classes:
 class Coins {
     constructor(id, symbol, name) {
@@ -75,9 +73,9 @@ function fetchCoins() {
 }
 function moreInfoContent(coin) {
     const moreInfo = `<img src="${coin.image.thumb}">
-  <p class="card-text m-0">${coin.id} = ${coin.market_data.current_price.usd} $</p>
-  <p class="card-text m-0">${coin.id} = ${coin.market_data.current_price.eur} €</p>
-  <p class="card-text mb-5">${coin.id} = ${coin.market_data.current_price.ils} ₪</p>`;
+  <p class="card-text m-0">${coin.market_data.current_price.usd} $</p>
+  <p class="card-text m-0">${coin.market_data.current_price.eur} €</p>
+  <p class="card-text mb-5">${coin.market_data.current_price.ils} ₪</p>`;
     return moreInfo;
 }
 function fetchCoin(coinId) {
@@ -106,10 +104,10 @@ function createCard(coins) {
     for (let i = 0; i < coins.length; i++) {
         const coin = coins[i];
         const cardContainer = $('<div>');
-        cardContainer.addClass('card col-md-4 text-center m-1');
+        cardContainer.addClass('card col-md-4 text-center m-1 text-bg-secondary');
         cardContainer.css('width', '16rem');
         const cardBody = $('<div>');
-        cardBody.addClass('card-body p-0');
+        cardBody.addClass('card-body p-0 ');
         cardContainer.append(cardBody);
         const cardHeadingAndCheckBox = $('<div>');
         cardHeadingAndCheckBox.addClass('cardHeadingAndCheckBox d-flex mb-3');
@@ -135,8 +133,7 @@ function createCard(coins) {
         coinName.html(coin.name);
         coinNameDiv.append(coinName);
         const moreInfoBtn = $('<a>');
-        moreInfoBtn.addClass('moreInfoBtn btn btn-primary position-absolute bottom-0 translate-middle-x mt-3');
-        // moreInfoBtn.attr('href', '#');
+        moreInfoBtn.addClass('moreInfoBtn btn btn-outline-warning my-3 mx-auto d-flex align-items-center justify-content-center col-12 w-50');
         moreInfoBtn.attr('id', `moreInfo_btn${coin.id}`);
         moreInfoBtn.html('More Info');
         cardBody.append(moreInfoBtn);
@@ -144,6 +141,7 @@ function createCard(coins) {
         moreInfoContainer.addClass('currencies text-center');
         moreInfoContainer.attr('id', `currencies_${coin.id}`);
         cardBody.append(moreInfoContainer);
+        // moreInfoBtn.attr('href', '#');
         cardsContainer.append(cardContainer);
         moreInfo2(coin.id);
     }
@@ -161,24 +159,26 @@ function moreInfo2(coinId) {
 }
 function toggleMoreInfo(moreInfoContainer, coinId) {
     return __awaiter(this, void 0, void 0, function* () {
-        // add to local storage with a condition the coin info
-        const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || null);
-        if (!coinInfoFromStorage) {
+        const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || '{}');
+        if (!coinInfoFromStorage[coinId]) {
             const coinFetched = yield fetchCoin(coinId);
-            localStorage['coinInfo'] = JSON.stringify(coinFetched);
+            coinInfoFromStorage[coinId] = coinFetched;
+            localStorage['coinInfo'] = JSON.stringify(coinInfoFromStorage);
             const getMoreInfoContent = moreInfoContent(coinFetched);
-            if (moreInfoContainer.is(':visible')) {
+            if (moreInfoContainer.html()) {
                 moreInfoContainer.slideUp(300);
+                moreInfoContainer.html('');
             }
             else {
                 moreInfoContainer.html(getMoreInfoContent).hide().slideDown(300);
             }
         }
         else {
-            // replace any...
-            const getMoreInfoContent = moreInfoContent(coinInfoFromStorage);
-            if (moreInfoContainer.is(':visible')) {
+            const coinFetched = coinInfoFromStorage[coinId];
+            const getMoreInfoContent = moreInfoContent(coinFetched);
+            if (moreInfoContainer.html()) {
                 moreInfoContainer.slideUp(300);
+                moreInfoContainer.html('');
             }
             else {
                 moreInfoContainer.html(getMoreInfoContent).hide().slideDown(300);
