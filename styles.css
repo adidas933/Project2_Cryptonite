@@ -1,32 +1,43 @@
+
+
 body {
-  background-color: rgb(48, 48, 48);
-  color: aliceblue;
+  overflow-anchor: none;
 }
 
-/* .headingContainer {
-  display: flex;
-} */
-
-.headingContainer img {
-  width: 100px;
-  margin-left: auto;
+.backgroundImageSuperman {
+  background-image: url('./pictures/Screenshot\ 2024-03-10\ 000527.png');
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  height: 450px;
 }
 
-.navbarAndSearchContainer {
-  display: flex;
-}
-
-.search {
-  margin-left: auto;
-  top: 13px;
+.bitcoin-green {
+  width: 74px;
   position: relative;
-} 
-
-/* .checkCrypto {
-  margin-left: auto;
-} */
-
-
-.currencies {
-  /* opacity: 0; */
+  bottom: 97px;
+  left: 19px;
 }
+
+.spanCryptonite {
+  color: rgb(59 255 0);
+  font-weight: 600;
+}
+
+#cryptoniteHeading {
+  margin-right: 7px;
+}
+
+.toggleButtonContainer {
+  margin-left: 180px;
+}
+
+/* .currencies {
+  transition: max-height ease-in-out 0.3s;
+  overflow: hidden;
+  max-height: 0;
+}
+
+.currencies.open {
+  max-height: 200px; 
+} */

@@ -1,4 +1,8 @@
 "use strict";
+// PROBLEMS:
+// when i click the more info button it wont work the first time
+// when I click the more info button the first time - I get the right info on the coin card button I clicked. after that when I click another coind more info button I get the first coin info. maybe something with the local storage that needs an if statement...
+// when page is loaded it brings me to the top of page.
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -42,102 +46,107 @@ class CoinImage {
     }
 }
 // Variables:
-let opacity;
 const cardsContainer = $('.cardsContainer');
 const moreInfoBtn = $('.moreInfoBtn');
 const searchBtn = $('.searchBtn');
 const searchInput = $('.searchInput');
 const arrayOfCoins = [];
 // Functions:
+$(window).on('unload', function () {
+    $(window).scrollTop(0);
+});
 function sortCoins() {
-    return __awaiter(this, void 0, void 0, function* () {
-        // maybe i should get from storage... instead of fetching each time
-        const coins = yield fetchCoins();
-        coins.forEach((coin) => {
-            if (coin.symbol.toLowerCase() === searchInput.val().toLowerCase()) {
-                cardsContainer.empty();
-                createCard(coin);
-            }
-        });
-        // get symbol of coins that is equal to search input.
-    });
+    const coins = JSON.parse(localStorage['coins'] || []);
+    const searchInputValue = searchInput.val();
+    const filteredCoins = coins.filter((coin) => coin.symbol.toLowerCase() === ((searchInputValue === null || searchInputValue === void 0 ? void 0 : searchInputValue.toLowerCase()) || ''));
+    cardsContainer.empty();
+    createCard(filteredCoins);
 }
 function fetchCoins() {
     return __awaiter(this, void 0, void 0, function* () {
         const responseCoins = yield fetch('https://api.coingecko.com/api/v3/coins/list');
-        return yield responseCoins.json();
+        const oneHundredCoins = [];
+        const coins = yield responseCoins.json();
+        for (let i = 0; i < 100; i++) {
+            oneHundredCoins.push(coins[i]);
+        }
+        return oneHundredCoins;
     });
 }
 function moreInfoContent(coin) {
     const moreInfo = `<img src="${coin.image.thumb}">
-  <p class="card-text">${coin.market_data.current_price.usd} $</p>
-  <p class="card-text">${coin.market_data.current_price.eur} €</p>
-  <p class="card-text">${coin.market_data.current_price.ils} ₪</p>`;
+  <p class="card-text m-0">${coin.id} = ${coin.market_data.current_price.usd} $</p>
+  <p class="card-text m-0">${coin.id} = ${coin.market_data.current_price.eur} €</p>
+  <p class="card-text mb-5">${coin.id} = ${coin.market_data.current_price.ils} ₪</p>`;
     return moreInfo;
 }
 function fetchCoin(coinId) {
     return __awaiter(this, void 0, void 0, function* () {
         const responseCoin = yield fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
-        const coinData = yield responseCoin.json();
-        // fix this to simple way without new...
-        const coin = new Coin(coinData.name, coinData.id, new CoinImage(coinData.image.thumb), new MarketData(new CurrentPrice(coinData.market_data.current_price.usd, coinData.market_data.current_price.eur, coinData.market_data.current_price.ils)));
-        return coin;
+        // returns coin info
+        return yield responseCoin.json();
     });
 }
-function getCrypto() {
+$(function getCrypto() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!localStorage['coins']) {
+            // 100 coins:
             const coins = yield fetchCoins();
-            for (let i = 0; i < 100; i++) {
-                const coin = coins[i];
-                createCard(coin);
-            }
             localStorage['coins'] = JSON.stringify(coins);
+            createCard(coins);
         }
         else {
             const coinFromStorage = JSON.parse(localStorage['coins']) || undefined;
-            for (let i = 0; i < 100; i++) {
-                const coin = coinFromStorage[i];
-                createCard(coin);
-            }
+            createCard(coinFromStorage);
         }
     });
-}
-function createCard(coin) {
-    const cardContainer = $('<div>');
-    cardContainer.addClass('card col-md-4 text-center');
-    cardContainer.css('width', '18rem');
-    const cardBody = $('<div>');
-    cardBody.addClass('card-body');
-    cardContainer.append(cardBody);
-    const cardHeadingAndCheckBox = $('<div>');
-    cardHeadingAndCheckBox.addClass('cardHeadingAndCheckBox d-flex p-2');
-    cardBody.append(cardHeadingAndCheckBox);
-    const cardTitle = $('<h5>');
-    cardTitle.addClass('card-title col-6');
-    cardTitle.html(coin.name);
-    cardHeadingAndCheckBox.append(cardTitle);
-    const toggleButtonContainer = $('<div>');
-    toggleButtonContainer.addClass('toggleButtonContainer form-check form-switch col-6 ms-5');
-    cardHeadingAndCheckBox.append(toggleButtonContainer);
-    const toggleButtonInput = $('<input>');
-    toggleButtonInput.addClass('form-check-input');
-    toggleButtonInput.attr('id', 'flexSwitchCheckDefault');
-    toggleButtonInput.attr('type', 'checkbox');
-    toggleButtonInput.attr('role', 'switch');
-    toggleButtonContainer.append(toggleButtonInput);
-    const moreInfoBtn = $('<a>');
-    moreInfoBtn.addClass('moreInfoBtn btn btn-primary');
-    moreInfoBtn.attr('href', '#');
-    moreInfoBtn.attr('id', `moreInfo_btn${coin.id}`);
-    moreInfoBtn.html('More Info');
-    cardBody.append(moreInfoBtn);
-    const moreInfoContainer = $('<div>');
-    moreInfoContainer.addClass('currencies text-center');
-    moreInfoContainer.attr('id', `currencies_${coin.id}`);
-    cardBody.append(moreInfoContainer);
-    cardsContainer.append(cardContainer);
-    moreInfo2(coin.id);
+});
+// make small functions:
+function createCard(coins) {
+    for (let i = 0; i < coins.length; i++) {
+        const coin = coins[i];
+        const cardContainer = $('<div>');
+        cardContainer.addClass('card col-md-4 text-center m-1');
+        cardContainer.css('width', '16rem');
+        const cardBody = $('<div>');
+        cardBody.addClass('card-body p-0');
+        cardContainer.append(cardBody);
+        const cardHeadingAndCheckBox = $('<div>');
+        cardHeadingAndCheckBox.addClass('cardHeadingAndCheckBox d-flex mb-3');
+        cardBody.append(cardHeadingAndCheckBox);
+        const toggleButtonContainer = $('<div>');
+        toggleButtonContainer.addClass('toggleButtonContainer form-check form-switch col-6');
+        cardHeadingAndCheckBox.append(toggleButtonContainer);
+        const toggleButtonInput = $('<input>');
+        toggleButtonInput.addClass('form-check-input');
+        toggleButtonInput.attr('id', 'flexSwitchCheckDefault');
+        toggleButtonInput.attr('type', 'checkbox');
+        toggleButtonInput.attr('role', 'switch');
+        toggleButtonContainer.append(toggleButtonInput);
+        const coinSymbol = $('<h5>');
+        coinSymbol.addClass('position-absolute');
+        coinSymbol.html(coin.symbol.toUpperCase());
+        cardHeadingAndCheckBox.append(coinSymbol);
+        const coinNameDiv = $('<div>');
+        coinNameDiv.addClass('mb-5 w-100');
+        cardBody.append(coinNameDiv);
+        const coinName = $('<h5>');
+        coinName.addClass('card-Name col-6 w-100');
+        coinName.html(coin.name);
+        coinNameDiv.append(coinName);
+        const moreInfoBtn = $('<a>');
+        moreInfoBtn.addClass('moreInfoBtn btn btn-primary position-absolute bottom-0 translate-middle-x mt-3');
+        // moreInfoBtn.attr('href', '#');
+        moreInfoBtn.attr('id', `moreInfo_btn${coin.id}`);
+        moreInfoBtn.html('More Info');
+        cardBody.append(moreInfoBtn);
+        const moreInfoContainer = $('<div>');
+        moreInfoContainer.addClass('currencies text-center');
+        moreInfoContainer.attr('id', `currencies_${coin.id}`);
+        cardBody.append(moreInfoContainer);
+        cardsContainer.append(cardContainer);
+        moreInfo2(coin.id);
+    }
 }
 function moreInfo2(coinId) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -152,18 +161,30 @@ function moreInfo2(coinId) {
 }
 function toggleMoreInfo(moreInfoContainer, coinId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const coinFetched = yield fetchCoin(coinId);
-        const getMoreInfoContent = moreInfoContent(coinFetched);
-        // opacity ? (opacity = 0) : (opacity = 1);
-        // moreInfoContainer.css('opacity', opacity);
-        if (moreInfoContainer.html()) {
-            moreInfoContainer.html('');
+        // add to local storage with a condition the coin info
+        const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || null);
+        if (!coinInfoFromStorage) {
+            const coinFetched = yield fetchCoin(coinId);
+            localStorage['coinInfo'] = JSON.stringify(coinFetched);
+            const getMoreInfoContent = moreInfoContent(coinFetched);
+            if (moreInfoContainer.is(':visible')) {
+                moreInfoContainer.slideUp(300);
+            }
+            else {
+                moreInfoContainer.html(getMoreInfoContent).hide().slideDown(300);
+            }
         }
         else {
-            moreInfoContainer.html(getMoreInfoContent);
+            // replace any...
+            const getMoreInfoContent = moreInfoContent(coinInfoFromStorage);
+            if (moreInfoContainer.is(':visible')) {
+                moreInfoContainer.slideUp(300);
+            }
+            else {
+                moreInfoContainer.html(getMoreInfoContent).hide().slideDown(300);
+            }
         }
     });
 }
 // Event listeners:
-document.addEventListener('DOMContentLoaded', getCrypto);
 searchBtn.on('click', sortCoins);

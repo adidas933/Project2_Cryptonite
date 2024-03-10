@@ -19,57 +19,75 @@
     <link rel="stylesheet" href="styles.css" />
     <title>Document</title>
   </head>
-  <body>
-    <!-- heading div: -->
-    <div class="headingContainer d-flex p-2">
-      <h1 class="display-6">Cryptonite</h1>
-      <img src="./pictures/cryptonite-pic.jpg" alt="" />
-    </div>
 
-    <!-- navbar, search, cards: -->
-    <div class="navbarSeachCardsContainer">
-      <!-- navbar and search: -->
-      <div class="navbarAndSearchContainer">
-        <!-- navbar: -->
-        <div class="navbar">
-          <ul class="nav nav-tabs">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Live Reports</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
-            </li>
-          </ul>
+  <body class="bg-dark text-light">
+    <!-- navbar and search: -->
+    <div class="navbarAndSearchContainer d-flex p-2">
+      <!-- navbar: -->
+      <div class="navbar">
+        <ul class="nav nav-tabs">
+          <div id="cryptoniteHeading">
+            <h3 class="spanCryptonite">Cryptonite</h3>
+          </div>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Live Reports</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
+        </ul>
+      </div>
+      <!-- search: -->
+      <div class="search ms-auto d-flex align-items-center justify-content-center">
+        <div class="input-group">
+          <input
+            type="search"
+            class="searchInput form-control rounded"
+            placeholder="Search"
+            aria-label="Search"
+            aria-describedby="search-addon"
+          />
+          <button
+            type="button"
+            class="searchBtn btn btn-outline-primary"
+            data-mdb-ripple-init
+          >
+            search
+          </button>
         </div>
-        <!-- search: -->
-        <div class="search">
-          <div class="input-group">
-            <input
-              type="search"
-              class="searchInput form-control rounded"
-              placeholder="Search"
-              aria-label="Search"
-              aria-describedby="search-addon"
-            />
-            <button
-              type="button"
-              class="searchBtn btn btn-outline-primary"
-              data-mdb-ripple-init
-            >
-              search
-            </button>
+      </div>
+    </div>
+  
+    <!-- background image and headings: -->
+    <div
+      class="backgroundImageSuperman position-relative text-center bg-image"
+    >
+      <div class="position-absolute top-0 start-0 end-0 bottom-0 mask">
+        <div class="position-relative d-flex justify-content-center align-items-center h-100">
+          <div class="text-white">
+            <h1 class="mb-3 display-1">The future of money is here</h1>
+            <h2 class="mb-3 fw-normal">Today's Cryptocurrency Prices by <span class="spanCryptonite">Cryptonite</span></h1>
+            <!-- <a data-mdb-ripple-init class="btn btn-outline-light btn-lg" href="#!" role="button"
+            >Call to action</a
+            > -->
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- navbar, search, cards: -->
+    <div class="navbarSeachCardsContainer mx-auto">
+      <!-- navbar and search: -->
+     
       <!--cards:-->
       <div class="container">
         <div class="row">
-          <div class="col">
-            <div class="cardsContainer row"></div>
-          </div>
+          <!-- <div class="col "> -->
+            <div class="cardsContainer row w-100 p-3 col-md-6 mx-auto justify-content-center"></div>
+          <!-- </div> -->
         </div>
       </div>
     </div>
