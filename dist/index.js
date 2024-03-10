@@ -1,4 +1,7 @@
 "use strict";
+// PROBLEMS:
+// when clicking the more info button the data comes before the button and the button is in the bottom how to change this?
+// Classes:
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,9 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// PROBLEMS:
-// when clicking the more info button the data comes before the button and the button is in the bottom how to change this?
-// Classes:
 class Coins {
     constructor(id, symbol, name) {
         this.id = id;
@@ -48,6 +48,9 @@ const cardsContainer = $('.cardsContainer');
 const moreInfoBtn = $('.moreInfoBtn');
 const searchBtn = $('.searchBtn');
 const searchInput = $('.searchInput');
+const aboutBtn = $('.aboutBtn');
+const liveReportsBtn = $('.liveReportsBtn');
+const homeBtn = $('.homeBtn');
 const arrayOfCoins = [];
 // Functions:
 $(window).on('unload', function () {
@@ -116,7 +119,7 @@ function createCard(coins) {
         toggleButtonContainer.addClass('toggleButtonContainer form-check form-switch col-6');
         cardHeadingAndCheckBox.append(toggleButtonContainer);
         const toggleButtonInput = $('<input>');
-        toggleButtonInput.addClass('form-check-input');
+        toggleButtonInput.addClass('form-check-input toggleButtonInput text-success'); // Add bg-primary for default blue background
         toggleButtonInput.attr('id', 'flexSwitchCheckDefault');
         toggleButtonInput.attr('type', 'checkbox');
         toggleButtonInput.attr('role', 'switch');
@@ -186,5 +189,24 @@ function toggleMoreInfo(moreInfoContainer, coinId) {
         }
     });
 }
+function aboutPage() {
+    cardsContainer.html('');
+    cardsContainer.html(`About Page: Adi Vanunu Cryptonite image of me:... personal info:... project description: ...`);
+}
+function liveReports() {
+    cardsContainer.html('');
+    cardsContainer.html(`Live Reports`);
+}
+function homePage() {
+    cardsContainer.html(`changes back to home page`);
+}
+$(document).on('change', '.toggleButtonInput', function () {
+    const parentCard = $(this).closest('.card');
+    parentCard.toggleClass('green-background', this.checked);
+    $('toggleButtonInput').css('border', 'green');
+});
 // Event listeners:
 searchBtn.on('click', sortCoins);
+aboutBtn.on('click', aboutPage);
+liveReportsBtn.on('click', liveReports);
+homeBtn.on('click', homePage);

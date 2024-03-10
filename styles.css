@@ -26,10 +26,86 @@ body {
   margin-right: 7px;
 }
 
+
+.custom-dropdown-item.active,
+.custom-dropdown-item:active {
+  background-color: green !important;
+  border: none !important;
+}
+
 .toggleButtonContainer {
   margin-left: 180px;
+  border: none !important;
+  
 }
+
+.toggleButtonInput:checked {
+  border: none !important;
+
+  background-color: green !important;
+  box-shadow: none !important;
+  color: green !important;
+
+}
+
+.toggleButtonInput {
+  box-shadow: none !important;
+  color: green !important;
+  border: none !important;
+  
+}
+
+.toggleButtonInput:active {
+  box-shadow: none !important;
+  border: none !important;
+  color: green !important;
+    background-color: green !important;
+
+}
+
+.toggleButtonInput:checked + .cardHeadingAndCheckBox .toggleButton::after {
+  background-color: white !important; /* Change the color of the toggle indicator */
+  color: green !important;
+  border: none !important;
+}
+
+.toggleButton::after {
+  background-color: white !important; /* Change the color of the toggle indicator */
+  color: green !important;
+  border: none !important;
+}
+
+
+
+/* .green-background {
+  background-color: green !important;
+  color: green !important;
+  border: none !important;
+
+} */
+
+/* .bg-success {
+  background-color: green !important;
+}
+
+.border-success {
+  border-color: green !important;
+} */
 
 /* .moreInfoBtn {
   margin: auto;
+} */
+
+/* @media (min-width:500px) {
+  .collapseInnerDiv {
+    display: none !important;
+    opacity: 0 !important;
+  }
+} */
+/* 
+@media (min-width: 992px) {
+  #navbarToggleExternalContent {
+    display: none !important;
+    visibility: hidden !important;
+  }
 } */

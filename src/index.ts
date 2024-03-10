@@ -1,6 +1,7 @@
 // PROBLEMS:
 // when clicking the more info button the data comes before the button and the button is in the bottom how to change this?
 // Classes:
+
 class Coins {
   id: string;
   symbol: string;
@@ -60,6 +61,9 @@ const cardsContainer: JQuery<HTMLElement> = $('.cardsContainer');
 const moreInfoBtn: JQuery<HTMLElement> = $('.moreInfoBtn');
 const searchBtn: JQuery<HTMLElement> = $('.searchBtn');
 const searchInput: JQuery<HTMLElement> = $('.searchInput');
+const aboutBtn: JQuery<HTMLElement> = $('.aboutBtn');
+const liveReportsBtn: JQuery<HTMLElement> = $('.liveReportsBtn');
+const homeBtn: JQuery<HTMLElement> = $('.homeBtn');
 const arrayOfCoins: Coin[] = [];
 
 // Functions:
@@ -143,12 +147,11 @@ function createCard(coins: Coins[]): void {
     cardHeadingAndCheckBox.append(toggleButtonContainer);
 
     const toggleButtonInput = $('<input>');
-    toggleButtonInput.addClass('form-check-input');
+    toggleButtonInput.addClass('form-check-input toggleButtonInput text-success'); // Add bg-primary for default blue background
     toggleButtonInput.attr('id', 'flexSwitchCheckDefault');
     toggleButtonInput.attr('type', 'checkbox');
     toggleButtonInput.attr('role', 'switch');
     toggleButtonContainer.append(toggleButtonInput);
-
     const coinSymbol = $('<h5>');
     coinSymbol.addClass('position-absolute');
     coinSymbol.html(coin.symbol.toUpperCase());
@@ -162,8 +165,6 @@ function createCard(coins: Coins[]): void {
     coinName.addClass('card-Name col-6 w-100');
     coinName.html(coin.name);
     coinNameDiv.append(coinName);
-
-    
 
     const moreInfoBtn = $('<a>');
     moreInfoBtn.addClass(
@@ -223,5 +224,30 @@ async function toggleMoreInfo(
   }
 }
 
+function aboutPage() {
+  cardsContainer.html('');
+  cardsContainer.html(
+    `About Page: Adi Vanunu Cryptonite image of me:... personal info:... project description: ...`
+  );
+}
+
+function liveReports() {
+  cardsContainer.html('');
+  cardsContainer.html(`Live Reports`);
+}
+
+function homePage() {
+  cardsContainer.html(`changes back to home page`);
+}
+
+$(document).on('change', '.toggleButtonInput', function() {
+  const parentCard = $(this).closest('.card');
+  parentCard.toggleClass('green-background', this.checked);
+  $('toggleButtonInput').css('border', 'green');
+});
+
 // Event listeners:
 searchBtn.on('click', sortCoins);
+aboutBtn.on('click', aboutPage);
+liveReportsBtn.on('click', liveReports);
+homeBtn.on('click', homePage);
