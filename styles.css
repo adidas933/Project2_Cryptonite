@@ -1,7 +1,4 @@
-body {
-  overflow-anchor: none;
-}
-
+/* background superman image and heading: */
 .backgroundImageSuperman {
   background-image: url('./pictures/Screenshot\ 2024-03-10\ 000527.png');
   height: 400px;
@@ -9,103 +6,31 @@ body {
   background-position: center;
   height: 450px;
 }
-
-.bitcoin-green {
-  width: 74px;
-  position: relative;
-  bottom: 97px;
-  left: 19px;
-}
-
 .spanCryptonite {
   color: rgb(59 255 0);
   font-weight: 600;
 }
-
+/* navbar */
 #cryptoniteHeading {
   margin-right: 7px;
 }
-
-
-.custom-dropdown-item.active,
 .custom-dropdown-item:active {
   background-color: green !important;
-  border: none !important;
 }
-
-.toggleButtonContainer {
+/* toggle button */
+.favoriteBtnDiv {
   margin-left: 180px;
-  border: none !important;
-  
 }
-
-.toggleButtonInput:checked {
-  border: none !important;
-
+.favoriteBtn:checked {
   background-color: green !important;
-  box-shadow: none !important;
-  color: green !important;
-
 }
 
-.toggleButtonInput {
+.favoriteBtn {
   box-shadow: none !important;
-  color: green !important;
   border: none !important;
-  
 }
 
-.toggleButtonInput:active {
-  box-shadow: none !important;
-  border: none !important;
-  color: green !important;
+.favoriteBtn:active {
     background-color: green !important;
-
 }
 
-.toggleButtonInput:checked + .cardHeadingAndCheckBox .toggleButton::after {
-  background-color: white !important; /* Change the color of the toggle indicator */
-  color: green !important;
-  border: none !important;
-}
-
-.toggleButton::after {
-  background-color: white !important; /* Change the color of the toggle indicator */
-  color: green !important;
-  border: none !important;
-}
-
-
-
-/* .green-background {
-  background-color: green !important;
-  color: green !important;
-  border: none !important;
-
-} */
-
-/* .bg-success {
-  background-color: green !important;
-}
-
-.border-success {
-  border-color: green !important;
-} */
-
-/* .moreInfoBtn {
-  margin: auto;
-} */
-
-/* @media (min-width:500px) {
-  .collapseInnerDiv {
-    display: none !important;
-    opacity: 0 !important;
-  }
-} */
-/* 
-@media (min-width: 992px) {
-  #navbarToggleExternalContent {
-    display: none !important;
-    visibility: hidden !important;
-  }
-} */
