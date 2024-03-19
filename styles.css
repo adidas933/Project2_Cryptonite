@@ -17,6 +17,8 @@
 .custom-dropdown-item:active {
   background-color: green !important;
 }
+
+
 /* toggle button */
 .favoriteBtnDiv {
   margin-left: 180px;

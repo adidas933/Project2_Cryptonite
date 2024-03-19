@@ -8,6 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// TODO:
+// 1. parallax scrolling
+// 2. about page making
+// 3. home page when clicking it show main page
+// 4. live reports
+// 5. after 5 favorite button clicked alert a massage module
 // Classes:
 class Coins {
     constructor(id, symbol, name) {
@@ -52,7 +58,16 @@ const homeBtn = $('.homeBtn');
 const arrayOfCoins = [];
 const navbar = $('.navbar');
 const spinner = $('.spinner');
+let buttonClicked = false;
 // Functions:
+$(window).on('scroll', function () {
+    if ($(this).scrollTop() > 0) {
+        navbar.addClass('bg-dark bg-opacity-50');
+    }
+    else {
+        navbar.removeClass('bg-dark bg-opacity-50');
+    }
+});
 $(function getCrypto() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!localStorage['coins']) {
@@ -206,8 +221,6 @@ function fetchCoin(coinId) {
 }
 function showMoreInfo(moreInfoDiv, coinId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const moreInfoBtn = $(`#moreInfoBtn${coinId}`);
-        moreInfoBtn.prop('disabled', true);
         spinner.removeClass('visually-hidden').addClass('fixed-bottom');
         try {
             const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || '{}');
@@ -221,18 +234,19 @@ function showMoreInfo(moreInfoDiv, coinId) {
                 coinFetched = coinInfoFromStorage[coinId];
             }
             const moreInfoContent = getMoreInfoContent(coinFetched);
-            if (moreInfoDiv.html()) {
-                moreInfoDiv.slideUp(300).html('');
+            if (!buttonClicked) {
+                moreInfoDiv.slideDown(300).html(moreInfoContent.html());
+                buttonClicked = true;
             }
             else {
-                moreInfoDiv.html(moreInfoContent.html()).slideDown(300);
+                moreInfoDiv.slideUp(300).html('');
+                buttonClicked = false;
             }
         }
         catch (error) {
             console.error('Error fetching coin information:', error);
         }
         finally {
-            moreInfoBtn.prop('disabled', false);
             spinner.addClass('visually-hidden');
         }
     });

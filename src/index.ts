@@ -1,3 +1,9 @@
+// TODO:
+// 1. parallax scrolling
+// 2. about page making
+// 3. home page when clicking it show main page
+// 4. live reports
+// 5. after 5 favorite button clicked alert a massage module
 // Classes:
 class Coins {
   id: string;
@@ -64,8 +70,17 @@ const homeBtn: JQuery<HTMLElement> = $('.homeBtn');
 const arrayOfCoins: Coin[] = [];
 const navbar: JQuery<HTMLElement> = $('.navbar');
 const spinner: JQuery<HTMLElement> = $('.spinner');
+let buttonClicked = false;
 
 // Functions:
+$(window).on('scroll', function () {
+  if (($(this).scrollTop() as number) > 0) {
+    navbar.addClass('bg-dark bg-opacity-50');
+  } else {
+    navbar.removeClass('bg-dark bg-opacity-50');
+  }
+});
+
 $(async function getCrypto(): Promise<void> {
   if (!localStorage['coins']) {
     spinner.removeClass('visually-hidden');
@@ -119,21 +134,18 @@ function createCardDiv(): JQuery<HTMLElement> {
 
   return cardDiv;
 }
-
 function createCardBody(cardDiv: JQuery<HTMLElement>): JQuery<HTMLElement> {
   const cardBody = $('<div>');
   cardBody.addClass('card-body p-0');
   cardDiv.append(cardBody);
   return cardBody;
 }
-
 function createCardHeader(cardBody: JQuery<HTMLElement>): JQuery<HTMLElement> {
   const cardHeader = $('<div>');
   cardHeader.addClass('cardHeadingAndCheckBox d-flex mb-3');
   cardBody.append(cardHeader);
   return cardHeader;
 }
-
 function CreateFavoriteBtn(
   cardHeader: JQuery<HTMLElement>
 ): JQuery<HTMLElement> {
@@ -148,7 +160,6 @@ function CreateFavoriteBtn(
   favoriteBtnDiv.append(favoriteBtn);
   return favoriteBtn;
 }
-
 function displayCoinSymbol(
   cardHeadingAndCheckBox: JQuery<HTMLElement>,
   coin: Coins
@@ -159,7 +170,6 @@ function displayCoinSymbol(
   cardHeadingAndCheckBox.append(coinSymbol);
   return coinSymbol;
 }
-
 function displayCoinName(
   cardBody: JQuery<HTMLElement>,
   coin: Coins
@@ -173,7 +183,6 @@ function displayCoinName(
   coinNameDiv.append(coinName);
   return coinName;
 }
-
 function createMoreInfoBtn(
   cardBody: JQuery<HTMLElement>,
   coin: Coins
@@ -187,7 +196,6 @@ function createMoreInfoBtn(
   cardBody.append(moreInfoBtn);
   return moreInfoBtn;
 }
-
 function createMoreInfoDiv(
   cardBody: JQuery<HTMLElement>,
   coin: Coins
@@ -198,7 +206,6 @@ function createMoreInfoDiv(
   cardBody.append(moreInfoDiv);
   return moreInfoDiv;
 }
-
 function createSpinnerInCard(
   moreInfoDiv: JQuery<HTMLElement>
 ): JQuery<HTMLElement> {
@@ -225,7 +232,6 @@ function findSearchedCoins() {
   cardsDiv.empty();
   createCard(filteredCoins);
 }
-
 function getMoreInfoContent(coin: Coin): JQuery<HTMLElement> {
   const currencies = $('<div>');
   const dollar = $('<p>');
@@ -242,7 +248,6 @@ function getMoreInfoContent(coin: Coin): JQuery<HTMLElement> {
   currencies.append(coinLogo, dollar, euro, nis);
   return currencies;
 }
-
 async function fetchCoin(coinId: string): Promise<Coin> {
   const responseCoin = await fetch(
     `https://api.coingecko.com/api/v3/coins/${coinId}`
@@ -254,8 +259,6 @@ async function showMoreInfo(
   moreInfoDiv: JQuery<HTMLElement>,
   coinId: string
 ): Promise<void> {
-  const moreInfoBtn = $(`#moreInfoBtn${coinId}`);
-  moreInfoBtn.prop('disabled', true);
   spinner.removeClass('visually-hidden').addClass('fixed-bottom');
 
   try {
@@ -271,15 +274,17 @@ async function showMoreInfo(
     }
     const moreInfoContent: JQuery<HTMLElement> =
       getMoreInfoContent(coinFetched);
-    if (moreInfoDiv.html()) {
-      moreInfoDiv.slideUp(300).html('');
+
+    if (!buttonClicked) {
+      moreInfoDiv.slideDown(300).html(moreInfoContent.html());
+      buttonClicked = true;
     } else {
-      moreInfoDiv.html(moreInfoContent.html()).slideDown(300);
+      moreInfoDiv.slideUp(300).html('');
+      buttonClicked = false;
     }
   } catch (error) {
     console.error('Error fetching coin information:', error);
   } finally {
-    moreInfoBtn.prop('disabled', false);
     spinner.addClass('visually-hidden');
   }
 }
