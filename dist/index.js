@@ -1,7 +1,4 @@
 "use strict";
-// PROBLEMS:
-// when clicking the more info button the data comes before the button and the button is in the bottom how to change this?
-// Classes:
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -11,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// Classes:
 class Coins {
     constructor(id, symbol, name) {
         this.id = id;
@@ -90,11 +88,15 @@ function createCard(coins) {
         CreateFavoriteBtn(cardHeader);
         displayCoinSymbol(cardHeader, coin);
         displayCoinName(cardBody, coin);
-        createMoreInfoBtn(cardBody, coin);
+        const moreInfoBtnId = createMoreInfoBtn(cardBody, coin);
         const moreInfoDiv = createMoreInfoDiv(cardBody, coin);
         createSpinnerInCard(moreInfoDiv);
         cardsDiv.append(cardDiv);
-        moreInfo2(coin.id);
+        moreInfoBtnId.on('click', function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                yield showMoreInfo(moreInfoDiv, coin.id);
+            });
+        });
     }
 }
 // card content functions:
@@ -180,63 +182,59 @@ function findSearchedCoins() {
     cardsDiv.empty();
     createCard(filteredCoins);
 }
-function moreInfoContent(coin) {
-    const moreInfo = `<img src="${coin.image.thumb}">
-    <p class="card-text m-0">${coin.market_data.current_price.usd} $</p>
-    <p class="card-text m-0">${coin.market_data.current_price.eur} €</p>
-    <p class="card-text mb-5">${coin.market_data.current_price.ils} ₪</p>`;
-    return moreInfo;
+function getMoreInfoContent(coin) {
+    const currencies = $('<div>');
+    const dollar = $('<p>');
+    dollar.addClass('card-text m-0');
+    dollar.html(`${coin.market_data.current_price.usd} $`);
+    const euro = $('<p>');
+    euro.addClass('card-text m-0');
+    euro.html(`${coin.market_data.current_price.eur} €`);
+    const nis = $('<p>');
+    nis.addClass('card-text mb-5');
+    nis.html(`${coin.market_data.current_price.ils} ₪`);
+    const coinLogo = $('<img>');
+    coinLogo.attr('src', `${coin.image.thumb}`);
+    currencies.append(coinLogo, dollar, euro, nis);
+    return currencies;
 }
 function fetchCoin(coinId) {
     return __awaiter(this, void 0, void 0, function* () {
         const responseCoin = yield fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
-        // returns coin info
         return yield responseCoin.json();
     });
 }
-function moreInfo2(coinId) {
+function showMoreInfo(moreInfoDiv, coinId) {
     return __awaiter(this, void 0, void 0, function* () {
         const moreInfoBtn = $(`#moreInfoBtn${coinId}`);
-        const moreInfoSpecific = $(`#moreInfoDiv${coinId}`);
-        moreInfoBtn.on('click', function () {
-            return __awaiter(this, void 0, void 0, function* () {
-                yield toggleMoreInfo(moreInfoSpecific, coinId);
-            });
-        });
-    });
-}
-function toggleMoreInfo(moreInfoSpecific, coinId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        spinner.removeClass('visually-hidden');
-        spinner.addClass('fixed-bottom');
-        const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || '{}');
-        // if coin not in storage:
-        if (!coinInfoFromStorage[coinId]) {
-            // the coin fetched and injected to storage
-            const coinFetched = yield fetchCoin(coinId);
-            coinInfoFromStorage[coinId] = coinFetched;
-            localStorage['coinInfo'] = JSON.stringify(coinInfoFromStorage);
-            const getMoreInfoContent = moreInfoContent(coinFetched);
-            if (moreInfoSpecific.html()) {
-                moreInfoSpecific.slideUp(300);
-                moreInfoSpecific.html('');
+        moreInfoBtn.prop('disabled', true);
+        spinner.removeClass('visually-hidden').addClass('fixed-bottom');
+        try {
+            const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || '{}');
+            let coinFetched;
+            if (!coinInfoFromStorage[coinId]) {
+                coinFetched = yield fetchCoin(coinId);
+                coinInfoFromStorage[coinId] = coinFetched;
+                localStorage['coinInfo'] = JSON.stringify(coinInfoFromStorage);
             }
             else {
-                moreInfoSpecific.html(getMoreInfoContent).hide().slideDown(300);
+                coinFetched = coinInfoFromStorage[coinId];
             }
-        }
-        else {
-            const coinFetched = coinInfoFromStorage[coinId];
-            const getMoreInfoContent = moreInfoContent(coinFetched);
-            if (moreInfoSpecific.html()) {
-                moreInfoSpecific.slideUp(300);
-                moreInfoSpecific.html('');
+            const moreInfoContent = getMoreInfoContent(coinFetched);
+            if (moreInfoDiv.html()) {
+                moreInfoDiv.slideUp(300).html('');
             }
             else {
-                moreInfoSpecific.html(getMoreInfoContent).hide().slideDown(300);
+                moreInfoDiv.html(moreInfoContent.html()).slideDown(300);
             }
         }
-        spinner.addClass('visually-hidden');
+        catch (error) {
+            console.error('Error fetching coin information:', error);
+        }
+        finally {
+            moreInfoBtn.prop('disabled', false);
+            spinner.addClass('visually-hidden');
+        }
     });
 }
 function aboutPage() {

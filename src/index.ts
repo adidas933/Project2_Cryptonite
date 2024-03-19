@@ -1,7 +1,4 @@
-// PROBLEMS:
-// when clicking the more info button the data comes before the button and the button is in the bottom how to change this?
 // Classes:
-
 class Coins {
   id: string;
   symbol: string;
@@ -104,11 +101,13 @@ function createCard(coins: Coins[]): void {
     CreateFavoriteBtn(cardHeader);
     displayCoinSymbol(cardHeader, coin);
     displayCoinName(cardBody, coin);
-    createMoreInfoBtn(cardBody, coin);
+    const moreInfoBtnId = createMoreInfoBtn(cardBody, coin);
     const moreInfoDiv = createMoreInfoDiv(cardBody, coin);
     createSpinnerInCard(moreInfoDiv);
     cardsDiv.append(cardDiv);
-    moreInfo2(coin.id);
+    moreInfoBtnId.on('click', async function () {
+      await showMoreInfo(moreInfoDiv, coin.id);
+    });
   }
 }
 
@@ -200,7 +199,9 @@ function createMoreInfoDiv(
   return moreInfoDiv;
 }
 
-function createSpinnerInCard(moreInfoDiv: JQuery<HTMLElement>): JQuery<HTMLElement> {
+function createSpinnerInCard(
+  moreInfoDiv: JQuery<HTMLElement>
+): JQuery<HTMLElement> {
   const spinnerDiv = $('<div>');
   spinnerDiv.addClass('d-flex justify-content-center align-items-center');
   const spinner = $('<div>');
@@ -225,63 +226,62 @@ function findSearchedCoins() {
   createCard(filteredCoins);
 }
 
-function moreInfoContent(coin: Coin): string {
-  const moreInfo = `<img src="${coin.image.thumb}">
-    <p class="card-text m-0">${coin.market_data.current_price.usd} $</p>
-    <p class="card-text m-0">${coin.market_data.current_price.eur} €</p>
-    <p class="card-text mb-5">${coin.market_data.current_price.ils} ₪</p>`;
-  return moreInfo;
+function getMoreInfoContent(coin: Coin): JQuery<HTMLElement> {
+  const currencies = $('<div>');
+  const dollar = $('<p>');
+  dollar.addClass('card-text m-0');
+  dollar.html(`${coin.market_data.current_price.usd} $`);
+  const euro = $('<p>');
+  euro.addClass('card-text m-0');
+  euro.html(`${coin.market_data.current_price.eur} €`);
+  const nis = $('<p>');
+  nis.addClass('card-text mb-5');
+  nis.html(`${coin.market_data.current_price.ils} ₪`);
+  const coinLogo = $('<img>');
+  coinLogo.attr('src', `${coin.image.thumb}`);
+  currencies.append(coinLogo, dollar, euro, nis);
+  return currencies;
 }
 
 async function fetchCoin(coinId: string): Promise<Coin> {
   const responseCoin = await fetch(
     `https://api.coingecko.com/api/v3/coins/${coinId}`
   );
-  // returns coin info
   return await responseCoin.json();
 }
-async function moreInfo2(coinId: string): Promise<void> {
-  const moreInfoBtn = $(`#moreInfoBtn${coinId}`);
-  const moreInfoSpecific = $(`#moreInfoDiv${coinId}`);
-  moreInfoBtn.on('click', async function () {
-    await toggleMoreInfo(moreInfoSpecific, coinId);
-  });
-}
 
-async function toggleMoreInfo(
-  moreInfoSpecific: JQuery<HTMLElement>,
+async function showMoreInfo(
+  moreInfoDiv: JQuery<HTMLElement>,
   coinId: string
 ): Promise<void> {
-  spinner.removeClass('visually-hidden');
-  spinner.addClass('fixed-bottom');
+  const moreInfoBtn = $(`#moreInfoBtn${coinId}`);
+  moreInfoBtn.prop('disabled', true);
+  spinner.removeClass('visually-hidden').addClass('fixed-bottom');
 
-  const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || '{}');
-  // if coin not in storage:
-  if (!coinInfoFromStorage[coinId]) {
-    // the coin fetched and injected to storage
-    const coinFetched: Coin = await fetchCoin(coinId);
-    coinInfoFromStorage[coinId] = coinFetched;
-    localStorage['coinInfo'] = JSON.stringify(coinInfoFromStorage);
-    const getMoreInfoContent: string = moreInfoContent(coinFetched);
+  try {
+    const coinInfoFromStorage = JSON.parse(localStorage['coinInfo'] || '{}');
+    let coinFetched: Coin;
 
-    if (moreInfoSpecific.html()) {
-      moreInfoSpecific.slideUp(300);
-      moreInfoSpecific.html('');
+    if (!coinInfoFromStorage[coinId]) {
+      coinFetched = await fetchCoin(coinId);
+      coinInfoFromStorage[coinId] = coinFetched;
+      localStorage['coinInfo'] = JSON.stringify(coinInfoFromStorage);
     } else {
-      moreInfoSpecific.html(getMoreInfoContent).hide().slideDown(300);
+      coinFetched = coinInfoFromStorage[coinId];
     }
-  } else {
-    const coinFetched: Coin = coinInfoFromStorage[coinId];
-    const getMoreInfoContent = moreInfoContent(coinFetched);
-
-    if (moreInfoSpecific.html()) {
-      moreInfoSpecific.slideUp(300);
-      moreInfoSpecific.html('');
+    const moreInfoContent: JQuery<HTMLElement> =
+      getMoreInfoContent(coinFetched);
+    if (moreInfoDiv.html()) {
+      moreInfoDiv.slideUp(300).html('');
     } else {
-      moreInfoSpecific.html(getMoreInfoContent).hide().slideDown(300);
+      moreInfoDiv.html(moreInfoContent.html()).slideDown(300);
     }
+  } catch (error) {
+    console.error('Error fetching coin information:', error);
+  } finally {
+    moreInfoBtn.prop('disabled', false);
+    spinner.addClass('visually-hidden');
   }
-  spinner.addClass('visually-hidden');
 }
 
 function aboutPage() {
