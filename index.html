@@ -23,6 +23,22 @@
     <title>Document</title>
   </head>
   <body class="bg-dark text-light">
+    <!-- Alert when more then 5 favorite coins selected:  -->
+    <div class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-black">Choose only 5 coins</h5>
+            <button type="button" class="btn-close modal-x-Btn" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-black"></div>
+          <div class="modal-footer">
+            <button type="button" class="closeModalBtn btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="saveChangesBtn btn btn-primary bg-success border-0">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <div class="parallax-header">
       <div class="container">
@@ -99,6 +115,11 @@
       <span class="visually-hidden"></span>
     </div>
   </div>
+
+
+
+
+  
   <!-- cards -->
   <div class="cards mx-auto">
   </div>

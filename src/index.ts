@@ -3,7 +3,6 @@
 // 2. about page making
 // 3. home page when clicking it show main page
 // 4. live reports
-// 5. after 5 favorite button clicked alert a massage module
 // Classes:
 class Coins {
   id: string;
@@ -68,11 +67,17 @@ const aboutBtn: JQuery<HTMLElement> = $('.aboutBtn');
 const liveReportsBtn: JQuery<HTMLElement> = $('.liveReportsBtn');
 const homeBtn: JQuery<HTMLElement> = $('.homeBtn');
 const arrayOfCoins: Coin[] = [];
+const arrayOfChecked: Coins[] = [];
 const navbar: JQuery<HTMLElement> = $('.navbar');
 const spinner: JQuery<HTMLElement> = $('.spinner');
-let buttonClicked = false;
+let moreInfoButtonClicked = false;
+let favoriteButtonCounter = 1;
+const alertFavoritesModal = $('.modal');
+const alertFavoritesCoins = $('.modal-body');
+const saveChangesBtn = $('.saveChangesBtn');
 
 // Functions:
+
 $(window).on('scroll', function () {
   if (($(this).scrollTop() as number) > 0) {
     navbar.addClass('bg-dark bg-opacity-50');
@@ -89,8 +94,7 @@ $(async function getCrypto(): Promise<void> {
     createCard(coins);
     spinner.addClass('visually-hidden');
   } else {
-    const coinFromStorage: Coins[] =
-      JSON.parse(localStorage['coins']) || undefined;
+    const coinFromStorage: Coins[] = JSON.parse(localStorage['coins']) || [];
     createCard(coinFromStorage);
   }
 });
@@ -107,13 +111,95 @@ async function fetchCoins(): Promise<Coins[]> {
   return oneHundredCoins;
 }
 
+function hideModal() {
+  $('.modal').hide();
+}
+
+function saveFavoriteToStorage(coin: Coins) {
+  arrayOfChecked.push(coin);
+  localStorage['checked'] = JSON.stringify(arrayOfChecked);
+}
+
+function getFavoritesFromStorage() {
+  return JSON.parse(localStorage['checked']);
+}
+
+function deleteCoin(
+  coinDiv: JQuery<HTMLElement>,
+  favoriteCoinsFromStorage: Coins[],
+  coin: Coins
+) {
+  coinDiv.addClass('d-none');
+  const index = favoriteCoinsFromStorage.indexOf(coin);
+  if (index !== -1) favoriteCoinsFromStorage.splice(index, 1);
+}
+
+function saveChanges(favoriteCoinsFromStorage: Coins[]) {
+  localStorage['checked'] = JSON.stringify(favoriteCoinsFromStorage);
+  alertFavoritesModal.hide();
+}
+
+function createDeleteBtn() {
+  const deletButton = $('<button>')
+    .addClass('btn-close bg-danger ms-auto')
+    .attr('type', 'button')
+    .attr('aria-label', 'close');
+  return deletButton;
+}
+
+function createCoinDiv(coinText: JQuery<HTMLElement>, deletButton: JQuery<HTMLElement>) {
+  const coinDiv = $('<div>')
+    .addClass('d-flex border-bottom border-2 mb-1')
+    .append(coinText, deletButton);
+  return coinDiv;
+}
+
+function addModalContent(favoriteCoinsFromStorage: Coins[]) {
+  favoriteCoinsFromStorage.forEach((coin: Coins) => {
+    const coinText = $('<h5>').html(coin.name);
+    const deletButton = createDeleteBtn();
+    const coinDiv = createCoinDiv(coinText, deletButton);
+    alertFavoritesCoins.append(coinDiv);
+    deletButton.on('click', function () {
+      deleteCoin(coinDiv, favoriteCoinsFromStorage, coin);
+    });
+  });
+}
+
+function favoriteBtnHandler(favoriteBtn: JQuery<HTMLElement>, coin: Coins) {
+  // make modal show only when favorite buttons are on 'on' mode and not 'off'
+  // when clicking 'off' on favorite button it will remove it from storage
+  // the added coin to storage will be saved also as the buttons themself on 'on' mode
+  // problem: when clicking again on a favorite button it opens the modal with double the amount needed.
+  // if user clicked close button the last coin added will be deleted.
+  if (favoriteBtn.prop('checked')) {
+    saveFavoriteToStorage(coin);
+    if (favoriteButtonCounter > 5) {
+      // show modal with coins from the webpage of selected coins.
+      const favoriteCoinsFromStorage = getFavoritesFromStorage();
+      addModalContent(favoriteCoinsFromStorage);
+      saveChangesBtn.on('click', function () {
+        saveChanges(favoriteCoinsFromStorage);
+      });
+      alertFavoritesModal.show();
+    }
+    favoriteButtonCounter++;
+  }
+}
+
 function createCard(coins: Coins[]): void {
   for (let i = 0; i < coins.length; i++) {
     const coin = coins[i];
     const cardDiv = createCardDiv();
     const cardBody = createCardBody(cardDiv);
     const cardHeader = createCardHeader(cardBody);
-    CreateFavoriteBtn(cardHeader);
+    const favoriteBtn = createFavoriteBtn(cardHeader);
+    /*    if (localStorage['checked'] && cardDiv.find(`.card-Name:contains('${coin.name}')`)) {
+      const getFavoritesFromStorage = JSON.parse(localStorage['checked'] || []);
+    } */
+    favoriteBtn.on('click', function () {
+      favoriteBtnHandler(favoriteBtn, coin);
+    });
     displayCoinSymbol(cardHeader, coin);
     displayCoinName(cardBody, coin);
     const moreInfoBtnId = createMoreInfoBtn(cardBody, coin);
@@ -146,7 +232,7 @@ function createCardHeader(cardBody: JQuery<HTMLElement>): JQuery<HTMLElement> {
   cardBody.append(cardHeader);
   return cardHeader;
 }
-function CreateFavoriteBtn(
+function createFavoriteBtn(
   cardHeader: JQuery<HTMLElement>
 ): JQuery<HTMLElement> {
   const favoriteBtnDiv = $('<div>');
@@ -275,12 +361,12 @@ async function showMoreInfo(
     const moreInfoContent: JQuery<HTMLElement> =
       getMoreInfoContent(coinFetched);
 
-    if (!buttonClicked) {
+    if (!moreInfoButtonClicked) {
       moreInfoDiv.slideDown(300).html(moreInfoContent.html());
-      buttonClicked = true;
+      moreInfoButtonClicked = true;
     } else {
       moreInfoDiv.slideUp(300).html('');
-      buttonClicked = false;
+      moreInfoButtonClicked = false;
     }
   } catch (error) {
     console.error('Error fetching coin information:', error);
@@ -310,3 +396,5 @@ searchBtn.on('click', findSearchedCoins);
 aboutBtn.on('click', aboutPage);
 liveReportsBtn.on('click', liveReports);
 homeBtn.on('click', homePage);
+$('.closeModalBtn').on('click', hideModal);
+$('.modal-x-Btn').on('click', hideModal);

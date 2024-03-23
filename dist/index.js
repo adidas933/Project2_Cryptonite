@@ -13,7 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 // 2. about page making
 // 3. home page when clicking it show main page
 // 4. live reports
-// 5. after 5 favorite button clicked alert a massage module
 // Classes:
 class Coins {
     constructor(id, symbol, name) {
@@ -56,9 +55,14 @@ const aboutBtn = $('.aboutBtn');
 const liveReportsBtn = $('.liveReportsBtn');
 const homeBtn = $('.homeBtn');
 const arrayOfCoins = [];
+const arrayOfChecked = [];
 const navbar = $('.navbar');
 const spinner = $('.spinner');
-let buttonClicked = false;
+let moreInfoButtonClicked = false;
+let favoriteButtonCounter = 1;
+const alertFavoritesModal = $('.modal');
+const alertFavoritesCoins = $('.modal-body');
+const saveChangesBtn = $('.saveChangesBtn');
 // Functions:
 $(window).on('scroll', function () {
     if ($(this).scrollTop() > 0) {
@@ -78,7 +82,7 @@ $(function getCrypto() {
             spinner.addClass('visually-hidden');
         }
         else {
-            const coinFromStorage = JSON.parse(localStorage['coins']) || undefined;
+            const coinFromStorage = JSON.parse(localStorage['coins']) || [];
             createCard(coinFromStorage);
         }
     });
@@ -94,13 +98,83 @@ function fetchCoins() {
         return oneHundredCoins;
     });
 }
+function hideModal() {
+    $('.modal').hide();
+}
+function saveFavoriteToStorage(coin) {
+    arrayOfChecked.push(coin);
+    localStorage['checked'] = JSON.stringify(arrayOfChecked);
+}
+function getFavoritesFromStorage() {
+    return JSON.parse(localStorage['checked']);
+}
+function deleteCoin(coinDiv, favoriteCoinsFromStorage, coin) {
+    coinDiv.addClass('d-none');
+    const index = favoriteCoinsFromStorage.indexOf(coin);
+    if (index !== -1)
+        favoriteCoinsFromStorage.splice(index, 1);
+}
+function saveChanges(favoriteCoinsFromStorage) {
+    localStorage['checked'] = JSON.stringify(favoriteCoinsFromStorage);
+    alertFavoritesModal.hide();
+}
+function createDeleteBtn() {
+    const deletButton = $('<button>')
+        .addClass('btn-close bg-danger ms-auto')
+        .attr('type', 'button')
+        .attr('aria-label', 'close');
+    return deletButton;
+}
+function createCoinDiv(coinText, deletButton) {
+    const coinDiv = $('<div>')
+        .addClass('d-flex border-bottom border-2 mb-1')
+        .append(coinText, deletButton);
+    return coinDiv;
+}
+function addModalContent(favoriteCoinsFromStorage) {
+    favoriteCoinsFromStorage.forEach((coin) => {
+        const coinText = $('<h5>').html(coin.name);
+        const deletButton = createDeleteBtn();
+        const coinDiv = createCoinDiv(coinText, deletButton);
+        alertFavoritesCoins.append(coinDiv);
+        deletButton.on('click', function () {
+            deleteCoin(coinDiv, favoriteCoinsFromStorage, coin);
+        });
+    });
+}
+function favoriteBtnHandler(favoriteBtn, coin) {
+    // make modal show only when favorite buttons are on 'on' mode and not 'off'
+    // when clicking 'off' on favorite button it will remove it from storage
+    // the added coin to storage will be saved also as the buttons themself on 'on' mode
+    // problem: when clicking again on a favorite button it opens the modal with double the amount needed.
+    // if user clicked close button the last coin added will be deleted.
+    if (favoriteBtn.prop('checked')) {
+        saveFavoriteToStorage(coin);
+        if (favoriteButtonCounter > 5) {
+            // show modal with coins from the webpage of selected coins.
+            const favoriteCoinsFromStorage = getFavoritesFromStorage();
+            addModalContent(favoriteCoinsFromStorage);
+            saveChangesBtn.on('click', function () {
+                saveChanges(favoriteCoinsFromStorage);
+            });
+            alertFavoritesModal.show();
+        }
+        favoriteButtonCounter++;
+    }
+}
 function createCard(coins) {
     for (let i = 0; i < coins.length; i++) {
         const coin = coins[i];
         const cardDiv = createCardDiv();
         const cardBody = createCardBody(cardDiv);
         const cardHeader = createCardHeader(cardBody);
-        CreateFavoriteBtn(cardHeader);
+        const favoriteBtn = createFavoriteBtn(cardHeader);
+        /*    if (localStorage['checked'] && cardDiv.find(`.card-Name:contains('${coin.name}')`)) {
+          const getFavoritesFromStorage = JSON.parse(localStorage['checked'] || []);
+        } */
+        favoriteBtn.on('click', function () {
+            favoriteBtnHandler(favoriteBtn, coin);
+        });
         displayCoinSymbol(cardHeader, coin);
         displayCoinName(cardBody, coin);
         const moreInfoBtnId = createMoreInfoBtn(cardBody, coin);
@@ -133,7 +207,7 @@ function createCardHeader(cardBody) {
     cardBody.append(cardHeader);
     return cardHeader;
 }
-function CreateFavoriteBtn(cardHeader) {
+function createFavoriteBtn(cardHeader) {
     const favoriteBtnDiv = $('<div>');
     favoriteBtnDiv.addClass('favoriteBtnDiv form-check form-switch col-6');
     cardHeader.append(favoriteBtnDiv);
@@ -234,13 +308,13 @@ function showMoreInfo(moreInfoDiv, coinId) {
                 coinFetched = coinInfoFromStorage[coinId];
             }
             const moreInfoContent = getMoreInfoContent(coinFetched);
-            if (!buttonClicked) {
+            if (!moreInfoButtonClicked) {
                 moreInfoDiv.slideDown(300).html(moreInfoContent.html());
-                buttonClicked = true;
+                moreInfoButtonClicked = true;
             }
             else {
                 moreInfoDiv.slideUp(300).html('');
-                buttonClicked = false;
+                moreInfoButtonClicked = false;
             }
         }
         catch (error) {
@@ -267,3 +341,5 @@ searchBtn.on('click', findSearchedCoins);
 aboutBtn.on('click', aboutPage);
 liveReportsBtn.on('click', liveReports);
 homeBtn.on('click', homePage);
+$('.closeModalBtn').on('click', hideModal);
+$('.modal-x-Btn').on('click', hideModal);
