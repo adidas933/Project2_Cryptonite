@@ -1,10 +1,10 @@
 /* background superman image and heading: */
 .backgroundImageSuperman {
   background-image: url('./pictures/Screenshot\ 2024-03-10\ 000527.png');
-  height: 400px;
+  height: 700px;
   background-size: cover;
   background-position: center;
-  height: 450px;
+  background-attachment: fixed;
 }
 .spanCryptonite {
   color: rgb(59 255 0);

@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // TODO:
-// 1. parallax scrolling
 // 2. about page making
 // 3. home page when clicking it show main page
 // 4. live reports
@@ -55,7 +54,7 @@ const aboutBtn = $('.aboutBtn');
 const liveReportsBtn = $('.liveReportsBtn');
 const homeBtn = $('.homeBtn');
 const arrayOfCoins = [];
-const arrayOfChecked = [];
+const arrayOfCheckedCoins = [];
 const navbar = $('.navbar');
 const spinner = $('.spinner');
 let moreInfoButtonClicked = false;
@@ -63,6 +62,7 @@ let favoriteButtonCounter = 1;
 const alertFavoritesModal = $('.modal');
 const alertFavoritesCoins = $('.modal-body');
 const saveChangesBtn = $('.saveChangesBtn');
+const arrayOfCheckedButtons = [];
 // Functions:
 $(window).on('scroll', function () {
     if ($(this).scrollTop() > 0) {
@@ -100,10 +100,11 @@ function fetchCoins() {
 }
 function hideModal() {
     $('.modal').hide();
+    alertFavoritesCoins.empty();
 }
-function saveFavoriteToStorage(coin) {
-    arrayOfChecked.push(coin);
-    localStorage['checked'] = JSON.stringify(arrayOfChecked);
+function saveFavoriteCoinsToStorage(coin) {
+    arrayOfCheckedCoins.push(coin);
+    localStorage['checked'] = JSON.stringify(arrayOfCheckedCoins);
 }
 function getFavoritesFromStorage() {
     return JSON.parse(localStorage['checked']);
@@ -116,7 +117,7 @@ function deleteCoin(coinDiv, favoriteCoinsFromStorage, coin) {
 }
 function saveChanges(favoriteCoinsFromStorage) {
     localStorage['checked'] = JSON.stringify(favoriteCoinsFromStorage);
-    alertFavoritesModal.hide();
+    hideModal();
 }
 function createDeleteBtn() {
     const deletButton = $('<button>')
@@ -131,7 +132,7 @@ function createCoinDiv(coinText, deletButton) {
         .append(coinText, deletButton);
     return coinDiv;
 }
-function addModalContent(favoriteCoinsFromStorage) {
+function addModalContent(favoriteCoinsFromStorage, favoriteButtonsFromStorage) {
     favoriteCoinsFromStorage.forEach((coin) => {
         const coinText = $('<h5>').html(coin.name);
         const deletButton = createDeleteBtn();
@@ -141,19 +142,38 @@ function addModalContent(favoriteCoinsFromStorage) {
             deleteCoin(coinDiv, favoriteCoinsFromStorage, coin);
         });
     });
+    favoriteButtonsFromStorage.forEach((coin) => {
+        // console.log(coin);
+        const coinText = $('<h5>').html(coin.name);
+        const deletButton = createDeleteBtn();
+        const coinDiv = createCoinDiv(coinText, deletButton);
+        alertFavoritesCoins.append(coinDiv);
+        deletButton.on('click', function () {
+            deleteCoin(coinDiv, favoriteCoinsFromStorage, coin);
+        });
+    });
+}
+function saveFavoriteButtonsToStorage(coin) {
+    arrayOfCheckedButtons.push(coin);
+    localStorage['checkedButtons'] = JSON.stringify(arrayOfCheckedButtons);
+}
+function getFavoriteButtonsFromStorage() {
+    return JSON.parse(localStorage['checkedButtons']);
 }
 function favoriteBtnHandler(favoriteBtn, coin) {
     // make modal show only when favorite buttons are on 'on' mode and not 'off'
     // when clicking 'off' on favorite button it will remove it from storage
     // the added coin to storage will be saved also as the buttons themself on 'on' mode
-    // problem: when clicking again on a favorite button it opens the modal with double the amount needed.
     // if user clicked close button the last coin added will be deleted.
     if (favoriteBtn.prop('checked')) {
-        saveFavoriteToStorage(coin);
+        saveFavoriteButtonsToStorage(coin);
+        saveFavoriteCoinsToStorage(coin);
         if (favoriteButtonCounter > 5) {
             // show modal with coins from the webpage of selected coins.
             const favoriteCoinsFromStorage = getFavoritesFromStorage();
-            addModalContent(favoriteCoinsFromStorage);
+            const favoriteButtonsFromStorage = getFavoriteButtonsFromStorage();
+            addModalContent(favoriteCoinsFromStorage, favoriteButtonsFromStorage);
+            // addModalContent(favoriteButtonsFromStorage);
             saveChangesBtn.on('click', function () {
                 saveChanges(favoriteCoinsFromStorage);
             });
@@ -168,10 +188,7 @@ function createCard(coins) {
         const cardDiv = createCardDiv();
         const cardBody = createCardBody(cardDiv);
         const cardHeader = createCardHeader(cardBody);
-        const favoriteBtn = createFavoriteBtn(cardHeader);
-        /*    if (localStorage['checked'] && cardDiv.find(`.card-Name:contains('${coin.name}')`)) {
-          const getFavoritesFromStorage = JSON.parse(localStorage['checked'] || []);
-        } */
+        const favoriteBtn = createFavoriteBtn(cardHeader, coin);
         favoriteBtn.on('click', function () {
             favoriteBtnHandler(favoriteBtn, coin);
         });
@@ -207,15 +224,23 @@ function createCardHeader(cardBody) {
     cardBody.append(cardHeader);
     return cardHeader;
 }
-function createFavoriteBtn(cardHeader) {
+function createFavoriteBtn(cardHeader, coin) {
     const favoriteBtnDiv = $('<div>');
     favoriteBtnDiv.addClass('favoriteBtnDiv form-check form-switch col-6');
     cardHeader.append(favoriteBtnDiv);
     const favoriteBtn = $('<input>');
-    favoriteBtn.addClass('form-check-input favoriteBtn text-success');
+    favoriteBtn.addClass(`form-check-input favoriteBtn text-success`);
     favoriteBtn.attr('id', 'flexSwitchCheckDefault');
     favoriteBtn.attr('type', 'checkbox');
     favoriteBtn.attr('role', 'switch');
+    let favoriteButtonsFromStorage = [];
+    if (localStorage['checkedButtons']) {
+        favoriteButtonsFromStorage = JSON.parse(localStorage['checkedButtons'] || []);
+    }
+    const isCoinInStorage = favoriteButtonsFromStorage.some((coinInStorage) => coinInStorage.id === coin.id);
+    if (isCoinInStorage) {
+        favoriteBtn.prop('checked', true);
+    }
     favoriteBtnDiv.append(favoriteBtn);
     return favoriteBtn;
 }
