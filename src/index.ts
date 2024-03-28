@@ -1,7 +1,9 @@
 // TODO:
-// 2. about page making
-// 3. home page when clicking it show main page
-// 4. live reports
+// 1. make create card function smaller. seperate to more functions.
+// 2. when clicking the save button - the favorite buttons will also change.
+// 2. create about page.
+// 3. home page button show home page
+// 4. live reports how to start?
 // Classes:
 class Coins {
   id: string;
@@ -65,16 +67,14 @@ const searchInput: JQuery<HTMLElement> = $('.searchInput');
 const aboutBtn: JQuery<HTMLElement> = $('.aboutBtn');
 const liveReportsBtn: JQuery<HTMLElement> = $('.liveReportsBtn');
 const homeBtn: JQuery<HTMLElement> = $('.homeBtn');
-const arrayOfCoins: Coin[] = [];
-const arrayOfCheckedCoins: Coins[] = [];
 const navbar: JQuery<HTMLElement> = $('.navbar');
 const spinner: JQuery<HTMLElement> = $('.spinner');
+const saveChangesBtn: JQuery<HTMLElement> = $('.saveChangesBtn');
+const alertFavoritesCoins: JQuery<HTMLElement> = $('.modal-body');
+const alertFavoritesModal: JQuery<HTMLElement> = $('.modal');
+const arrayOfCoins: Coin[] = [];
+const arrayOfCheckedCoins: Coins[] = [];
 let moreInfoButtonClicked = false;
-let favoriteButtonCounter = 1;
-const alertFavoritesModal = $('.modal');
-const alertFavoritesCoins = $('.modal-body');
-const saveChangesBtn = $('.saveChangesBtn');
-const arrayOfCheckedButtons: Coins[] = [];
 
 // Functions:
 
@@ -116,15 +116,6 @@ function hideModal() {
   alertFavoritesCoins.empty();
 }
 
-function saveFavoriteCoinsToStorage(coin: Coins) {
-  arrayOfCheckedCoins.push(coin);
-  localStorage['checked'] = JSON.stringify(arrayOfCheckedCoins);
-}
-
-function getFavoritesFromStorage() {
-  return JSON.parse(localStorage['checked']);
-}
-
 function deleteCoin(
   coinDiv: JQuery<HTMLElement>,
   favoriteCoinsFromStorage: Coins[],
@@ -158,10 +149,7 @@ function createCoinDiv(
   return coinDiv;
 }
 
-function addModalContent(
-  favoriteCoinsFromStorage: Coins[],
-  favoriteButtonsFromStorage: Coins[]
-) {
+function addModalContent(favoriteCoinsFromStorage: Coins[]) {
   favoriteCoinsFromStorage.forEach((coin: Coins) => {
     const coinText = $('<h5>').html(coin.name);
     const deletButton = createDeleteBtn();
@@ -171,48 +159,6 @@ function addModalContent(
       deleteCoin(coinDiv, favoriteCoinsFromStorage, coin);
     });
   });
-  favoriteButtonsFromStorage.forEach((coin) => {
-    // console.log(coin);
-    const coinText = $('<h5>').html(coin.name);
-    const deletButton = createDeleteBtn();
-    const coinDiv = createCoinDiv(coinText, deletButton);
-    alertFavoritesCoins.append(coinDiv);
-    deletButton.on('click', function () {
-      deleteCoin(coinDiv, favoriteCoinsFromStorage, coin);
-    });
-  });
-}
-
-function saveFavoriteButtonsToStorage(coin: Coins) {
-  arrayOfCheckedButtons.push(coin);
-  localStorage['checkedButtons'] = JSON.stringify(arrayOfCheckedButtons);
-}
-
-function getFavoriteButtonsFromStorage() {
-  return JSON.parse(localStorage['checkedButtons']);
-}
-function favoriteBtnHandler(favoriteBtn: JQuery<HTMLElement>, coin: Coins) {
-  // make modal show only when favorite buttons are on 'on' mode and not 'off'
-  // when clicking 'off' on favorite button it will remove it from storage
-  // the added coin to storage will be saved also as the buttons themself on 'on' mode
-  // if user clicked close button the last coin added will be deleted.
-  if (favoriteBtn.prop('checked')) {
-    saveFavoriteButtonsToStorage(coin);
-    saveFavoriteCoinsToStorage(coin);
-
-    if (favoriteButtonCounter > 5) {
-      // show modal with coins from the webpage of selected coins.
-      const favoriteCoinsFromStorage = getFavoritesFromStorage();
-      const favoriteButtonsFromStorage = getFavoriteButtonsFromStorage();
-      addModalContent(favoriteCoinsFromStorage, favoriteButtonsFromStorage);
-      // addModalContent(favoriteButtonsFromStorage);
-      saveChangesBtn.on('click', function () {
-        saveChanges(favoriteCoinsFromStorage);
-      });
-      alertFavoritesModal.show();
-    }
-    favoriteButtonCounter++;
-  }
 }
 
 function createCard(coins: Coins[]): void {
@@ -221,10 +167,27 @@ function createCard(coins: Coins[]): void {
     const cardDiv = createCardDiv();
     const cardBody = createCardBody(cardDiv);
     const cardHeader = createCardHeader(cardBody);
+
     const favoriteBtn = createFavoriteBtn(cardHeader, coin);
-    favoriteBtn.on('click', function () {
+    favoriteBtn.on('click', function (e: JQuery.ClickEvent<HTMLElement>) {
+      const favoriteCoinsFromStorage = getFavoriteCoinsFromStorage();
+      if (e.target.checked) {
+        favoriteCoinsFromStorage.push(coin);
+        localStorage['checked'] = JSON.stringify(favoriteCoinsFromStorage);
+      } else {
+        // remove coin from storage
+        const index = favoriteCoinsFromStorage.findIndex(
+          (c: Coins) => c.id === coin.id
+        );
+        console.log(index);
+        // remove it from storage and make it as unchecked
+        if (index !== -1) favoriteCoinsFromStorage.splice(index, 1);
+        // favoriteBtn.prop('checked', false);
+      }
+      saveChanges(favoriteCoinsFromStorage);
       favoriteBtnHandler(favoriteBtn, coin);
     });
+
     displayCoinSymbol(cardHeader, coin);
     displayCoinName(cardBody, coin);
     const moreInfoBtnId = createMoreInfoBtn(cardBody, coin);
@@ -234,6 +197,62 @@ function createCard(coins: Coins[]): void {
     moreInfoBtnId.on('click', async function () {
       await showMoreInfo(moreInfoDiv, coin.id);
     });
+  }
+}
+
+function saveFavoriteCoinsToStorage(coin: Coins) {
+  arrayOfCheckedCoins.push(coin);
+  localStorage['checked'] = JSON.stringify(arrayOfCheckedCoins);
+}
+
+function getFavoriteCoinsFromStorage() {
+  const storedCoins = localStorage['checked'];
+  if (storedCoins) {
+    return JSON.parse(storedCoins);
+  } else {
+    return [];
+  }
+}
+
+function createFavoriteBtn(
+  cardHeader: JQuery<HTMLElement>,
+  coin: Coins
+): JQuery<HTMLElement> {
+  const favoriteBtnDiv = $('<div>');
+  favoriteBtnDiv.addClass('favoriteBtnDiv form-check form-switch col-6');
+  cardHeader.append(favoriteBtnDiv);
+
+  const favoriteBtn = $('<input>');
+  favoriteBtn.addClass(`form-check-input favoriteBtn text-success`);
+  favoriteBtn.attr('id', 'flexSwitchCheckDefault');
+  favoriteBtn.attr('type', 'checkbox');
+  favoriteBtn.attr('role', 'switch');
+  // from here fix:
+  const favoriteCoinsFromStorage = getFavoriteCoinsFromStorage();
+  // checking if coin is in storage
+  const isCoinInStorage = favoriteCoinsFromStorage.some(
+    (coinInStorage: Coins) => coinInStorage.id === coin.id
+  );
+  // if coin is in storage create is as checked. if not, as unchecked.
+  if (isCoinInStorage) {
+    favoriteBtn.prop('checked', true);
+  } else {
+    favoriteBtn.prop('checked', false);
+  }
+
+  favoriteBtnDiv.append(favoriteBtn);
+  return favoriteBtn;
+}
+
+function favoriteBtnHandler(favoriteBtn: JQuery<HTMLElement>, coin: Coins) {
+  // fix all function:
+  const favoriteCoinsFromStorage = getFavoriteCoinsFromStorage();
+  if (favoriteCoinsFromStorage.length > 5) {
+    addModalContent(favoriteCoinsFromStorage);
+    saveChangesBtn.on('click', function () {
+      saveChanges(favoriteCoinsFromStorage);
+    });
+    alertFavoritesModal.show();
   }
 }
 
@@ -256,35 +275,6 @@ function createCardHeader(cardBody: JQuery<HTMLElement>): JQuery<HTMLElement> {
   cardHeader.addClass('cardHeadingAndCheckBox d-flex mb-3');
   cardBody.append(cardHeader);
   return cardHeader;
-}
-function createFavoriteBtn(
-  cardHeader: JQuery<HTMLElement>,
-  coin: Coins
-): JQuery<HTMLElement> {
-  const favoriteBtnDiv = $('<div>');
-  favoriteBtnDiv.addClass('favoriteBtnDiv form-check form-switch col-6');
-  cardHeader.append(favoriteBtnDiv);
-
-  const favoriteBtn = $('<input>');
-  favoriteBtn.addClass(`form-check-input favoriteBtn text-success`);
-  favoriteBtn.attr('id', 'flexSwitchCheckDefault');
-  favoriteBtn.attr('type', 'checkbox');
-  favoriteBtn.attr('role', 'switch');
-
-  let favoriteButtonsFromStorage = [];
-  if (localStorage['checkedButtons']) {
-    favoriteButtonsFromStorage = JSON.parse(
-      localStorage['checkedButtons'] || []
-    );
-  }
-  const isCoinInStorage = favoriteButtonsFromStorage.some(
-    (coinInStorage: Coins) => coinInStorage.id === coin.id
-  );
-  if (isCoinInStorage) {
-    favoriteBtn.prop('checked', true);
-  }
-  favoriteBtnDiv.append(favoriteBtn);
-  return favoriteBtn;
 }
 
 function displayCoinSymbol(
